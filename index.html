@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CHRONO-PRO — Ultra-Precision Chronograph & Stopwatch</title>
+  <meta name="description" content="An ultra-precision, high-performance stopwatch and chronograph web application with zero-drift timekeeping, analog sweep dial, lap analytics, and audio feedback. Built for Prodigy InfoTech Task-02.">
+  <meta name="keywords" content="Prodigy InfoTech, Stopwatch Web Application, Chronograph, Lap Timer, Full Stack Development, High Precision Timer">
+  <meta name="author" content="Raj Goyal">
+
+  <!-- Google Fonts: Outfit (Display), Space Grotesk (Accents), JetBrains Mono (Numbers) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome Icons 6.5.1 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-theme="violet">
+
+  <!-- Ambient Luxury Glow Orbs -->
+  <div class="ambient-glow glow-top" aria-hidden="true"></div>
+  <div class="ambient-glow glow-bottom" aria-hidden="true"></div>
+
+  <!-- Background Animated Canvas -->
+  <canvas id="bg-canvas" aria-hidden="true"></canvas>
+
+  <div class="app-wrapper">
+    
+    <!-- ========================================================= -->
+    <!-- HEADER BAR -->
+    <!-- ========================================================= -->
+    <header class="app-header">
+      <div class="header-container">
+        
+        <!-- Brand Logo -->
+        <div class="brand-box">
+          <div class="brand-icon">
+            <i class="fa-solid fa-stopwatch-20"></i>
+            <span class="icon-pulse"></span>
+          </div>
+          <div class="brand-info">
+            <h1 class="brand-title">CHRONO<span class="brand-dot">.</span><span class="brand-accent">PRO</span></h1>
+            <span class="brand-tagline">Precision Chronograph v2.4</span>
+          </div>
+        </div>
+
+        <!-- Internship Task Badge -->
+        <div class="task-badge">
+          <i class="fa-solid fa-award"></i>
+          <span>Prodigy InfoTech • Task-02</span>
+        </div>
+
+        <!-- Header Utility Actions -->
+        <div class="header-actions">
+          
+          <!-- Sound Toggle Button -->
+          <button class="action-btn" id="sound-toggle-btn" title="Toggle Mechanical Audio Click (M)" aria-label="Toggle Sound Effects">
+            <i class="fa-solid fa-volume-high" id="sound-icon"></i>
+            <span class="btn-tooltip">Sound: ON</span>
+          </button>
+
+          <!-- Fullscreen Toggle Button -->
+          <button class="action-btn" id="fullscreen-btn" title="Toggle Fullscreen Mode (F)" aria-label="Toggle Fullscreen">
+            <i class="fa-solid fa-expand" id="fullscreen-icon"></i>
+            <span class="btn-tooltip">Fullscreen</span>
+          </button>
+
+          <!-- Keyboard Shortcuts Modal Trigger -->
+          <button class="action-btn" id="shortcuts-btn" title="Keyboard Shortcuts (?)" aria-label="Keyboard Shortcuts">
+            <i class="fa-regular fa-keyboard"></i>
+            <span class="btn-tooltip">Shortcuts</span>
+          </button>
+
+          <!-- Theme Preset Switcher Dropdown -->
+          <div class="theme-dropdown" id="theme-dropdown">
+            <button class="theme-trigger-btn" id="theme-btn" title="Select Chrono Theme (T)" aria-label="Theme Selector">
+              <i class="fa-solid fa-palette"></i>
+              <span class="theme-current-dot"></span>
+            </button>
+            <div class="theme-menu" id="theme-menu">
+              <span class="theme-menu-title">Chrono Aura Themes</span>
+              <div class="theme-options">
+                <button class="theme-opt active" data-color="violet">
+                  <span class="dot dot-violet"></span> Cyber Violet
+                </button>
+                <button class="theme-opt" data-color="cyan">
+                  <span class="dot dot-cyan"></span> Monaco Cyan
+                </button>
+                <button class="theme-opt" data-color="emerald">
+                  <span class="dot dot-emerald"></span> Le Mans Emerald
+                </button>
+                <button class="theme-opt" data-color="red">
+                  <span class="dot dot-red"></span> Grand Prix Red
+                </button>
+                <button class="theme-opt" data-color="gold">
+                  <span class="dot dot-gold"></span> Titanium Gold
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </header>
+
+    <!-- ========================================================= -->
+    <!-- MAIN CHRONOGRAPH STAGE -->
+    <!-- ========================================================= -->
+    <main class="chrono-stage">
+      
+      <!-- Status Pill -->
+      <div class="status-indicator-wrapper">
+        <div class="status-indicator" id="status-badge">
+          <span class="status-pulse-dot"></span>
+          <span class="status-label" id="status-text">READY</span>
+        </div>
+      </div>
+
+      <!-- Chronograph Instrument Dial & Digital Display -->
+      <div class="instrument-container">
+        
+        <!-- Outer Glowing Radial Bezel -->
+        <div class="chrono-bezel">
+          
+          <!-- SVG Analog Dial with Sweep Needle & Progress Ring -->
+          <svg class="dial-svg" viewBox="0 0 440 440" width="100%" height="100%">
+            <defs>
+              <!-- Glowing Gradient for Sweep Hand & Ring -->
+              <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="var(--primary-color)" />
+                <stop offset="50%" stop-color="var(--secondary-color)" />
+                <stop offset="100%" stop-color="var(--accent-glow-stop)" />
+              </linearGradient>
+
+              <!-- Filter for Neon Glow -->
+              <filter id="needleGlow" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="3" result="blur" />
+                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+              </filter>
+            </defs>
+
+            <!-- Outer Dial Track Base -->
+            <circle class="dial-track" cx="220" cy="220" r="195" />
+
+            <!-- Animated Seconds Progress Arc -->
+            <circle class="dial-progress-ring" id="progress-ring" cx="220" cy="220" r="195" />
+
+            <!-- Subdial Track (Minute / Lap counter subdial) -->
+            <circle class="subdial-track" cx="220" cy="120" r="42" />
+            <circle class="subdial-progress" id="subdial-progress" cx="220" cy="120" r="42" />
+
+            <!-- Radial Minute/Second Tick Marks Container (Rendered via JS) -->
+            <g id="dial-ticks-group"></g>
+
+            <!-- Subdial Needle -->
+            <g id="subdial-needle-group" transform="rotate(0 220 120)">
+              <line class="subdial-needle" x1="220" y1="120" x2="220" y2="84" />
+              <circle class="subdial-pin" cx="220" cy="120" r="4" />
+            </g>
+
+            <!-- Main Chronograph Sweep Needle (Rotating Seconds/Milliseconds Hand) -->
+            <g id="sweep-needle-group" transform="rotate(0 220 220)">
+              <!-- Counterweight tail -->
+              <line class="needle-tail" x1="220" y1="220" x2="220" y2="255" />
+              <circle class="needle-counterweight" cx="220" cy="245" r="5" />
+              <!-- Primary sweep needle -->
+              <line class="sweep-needle" id="sweep-needle" x1="220" y1="220" x2="220" y2="30" filter="url(#needleGlow)" />
+              <circle class="needle-tip" cx="220" cy="30" r="3.5" />
+              <!-- Center Hub -->
+              <circle class="needle-hub-outer" cx="220" cy="220" r="14" />
+              <circle class="needle-hub-inner" cx="220" cy="220" r="6" />
+            </g>
+          </svg>
+
+          <!-- Center Instrument Panel (Digital Readout Inside Bezel) -->
+          <div class="dial-center-panel">
+            
+            <div class="subdial-label">
+              <span id="subdial-val">00</span>
+              <span class="subdial-unit">MIN</span>
+            </div>
+
+            <!-- Primary Master Digital Timer Display -->
+            <div class="digital-display" id="digital-timer" aria-live="polite">
+              <div class="time-block hours-block" id="hours-wrapper">
+                <span class="time-num" id="display-hours">00</span>
+                <span class="time-label">HRS</span>
+              </div>
+              <span class="time-colon">:</span>
+              <div class="time-block">
+                <span class="time-num" id="display-minutes">00</span>
+                <span class="time-label">MIN</span>
+              </div>
+              <span class="time-colon">:</span>
+              <div class="time-block">
+                <span class="time-num" id="display-seconds">00</span>
+                <span class="time-label">SEC</span>
+              </div>
+              <span class="time-dot">.</span>
+              <div class="time-block ms-block">
+                <span class="time-num ms-num" id="display-ms">000</span>
+                <span class="time-label">MS</span>
+              </div>
+            </div>
+
+            <!-- Current Lap Live Interval -->
+            <div class="live-lap-preview" id="live-lap-preview">
+              <span class="lap-tag">CURRENT LAP</span>
+              <span class="lap-time-preview" id="current-lap-preview">00:00:00.000</span>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- ========================================================= -->
+      <!-- ACTION CONTROLS DOCK (Start / Pause / Lap / Reset) -->
+      <!-- ========================================================= -->
+      <div class="action-dock">
+        
+        <!-- Left Button: Lap / Split -->
+        <button class="dock-btn btn-lap" id="lap-btn" disabled aria-label="Record Lap Time (Shortcut: L)">
+          <div class="btn-icon-wrapper">
+            <i class="fa-solid fa-flag-checkered"></i>
+          </div>
+          <span class="btn-title">Lap</span>
+          <span class="btn-kbd">L</span>
+          <span class="dock-btn-glow"></span>
+        </button>
+
+        <!-- Center Master Button: Start / Pause / Resume -->
+        <button class="dock-btn btn-master btn-start" id="master-btn" aria-label="Start / Pause Stopwatch (Shortcut: Space)">
+          <div class="master-btn-ring"></div>
+          <div class="btn-icon-wrapper master-icon">
+            <i class="fa-solid fa-play" id="master-icon"></i>
+          </div>
+          <span class="btn-title" id="master-label">Start</span>
+          <span class="btn-kbd">SPACE</span>
+          <span class="dock-btn-glow master-glow"></span>
+        </button>
+
+        <!-- Right Button: Reset -->
+        <button class="dock-btn btn-reset" id="reset-btn" disabled aria-label="Reset Stopwatch (Shortcut: R)">
+          <div class="btn-icon-wrapper">
+            <i class="fa-solid fa-rotate-right"></i>
+          </div>
+          <span class="btn-title">Reset</span>
+          <span class="btn-kbd">R</span>
+          <span class="dock-btn-glow"></span>
+        </button>
+
+      </div>
+
+      <!-- ========================================================= -->
+      <!-- LAP METRICS SUMMARY STRIP (Appears When Laps Recorded) -->
+      <!-- ========================================================= -->
+      <section class="lap-summary-strip" id="lap-summary-strip" style="display: none;">
+        
+        <div class="summary-card">
+          <div class="summary-icon"><i class="fa-solid fa-hashtag"></i></div>
+          <div class="summary-data">
+            <span class="summary-label">Total Laps</span>
+            <span class="summary-val" id="stat-total-laps">0</span>
+          </div>
+        </div>
+
+        <div class="summary-card stat-fastest">
+          <div class="summary-icon text-emerald"><i class="fa-solid fa-bolt"></i></div>
+          <div class="summary-data">
+            <span class="summary-label">Fastest Lap</span>
+            <span class="summary-val text-emerald" id="stat-fastest-lap">--:--.--</span>
+          </div>
+        </div>
+
+        <div class="summary-card stat-slowest">
+          <div class="summary-icon text-rose"><i class="fa-solid fa-stopwatch"></i></div>
+          <div class="summary-data">
+            <span class="summary-label">Slowest Lap</span>
+            <span class="summary-val text-rose" id="stat-slowest-lap">--:--.--</span>
+          </div>
+        </div>
+
+        <div class="summary-card">
+          <div class="summary-icon text-cyan"><i class="fa-solid fa-chart-line"></i></div>
+          <div class="summary-data">
+            <span class="summary-label">Average Lap</span>
+            <span class="summary-val text-cyan" id="stat-avg-lap">--:--.--</span>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ========================================================= -->
+      <!-- RECORDED LAPS HISTORY SECTION -->
+      <!-- ========================================================= -->
+      <section class="laps-section">
+        
+        <div class="laps-header">
+          <div class="laps-title-box">
+            <h2 class="laps-title">Recorded Laps</h2>
+            <span class="laps-count-badge" id="laps-counter-badge">0 Laps</span>
+          </div>
+
+          <div class="laps-actions-group">
+            <button class="tool-btn" id="copy-laps-btn" disabled title="Copy Lap Times to Clipboard">
+              <i class="fa-regular fa-copy"></i>
+              <span>Copy</span>
+            </button>
+            <button class="tool-btn" id="export-csv-btn" disabled title="Download Laps as CSV file">
+              <i class="fa-solid fa-download"></i>
+              <span>Export CSV</span>
+            </button>
+            <button class="tool-btn tool-btn-danger" id="clear-laps-btn" disabled title="Clear Lap History">
+              <i class="fa-regular fa-trash-can"></i>
+              <span>Clear</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Lap Items Table Container -->
+        <div class="laps-table-wrapper">
+          
+          <table class="laps-table" id="laps-table">
+            <thead>
+              <tr>
+                <th class="th-lap">Lap #</th>
+                <th class="th-time">Lap Duration</th>
+                <th class="th-split">Split (Total)</th>
+                <th class="th-delta">Delta</th>
+                <th class="th-tag">Analysis</th>
+              </tr>
+            </thead>
+            <tbody id="laps-list-body">
+              <!-- Dynamically populated rows -->
+            </tbody>
+          </table>
+
+          <!-- Empty State (Shown when no laps recorded) -->
+          <div class="laps-empty-state" id="laps-empty-state">
+            <div class="empty-icon-circle">
+              <i class="fa-solid fa-stopwatch"></i>
+            </div>
+            <h3 class="empty-title">No Laps Recorded Yet</h3>
+            <p class="empty-desc">
+              Start the chronograph and click <kbd>Lap</kbd> (or press <kbd>L</kbd>) to record split times and interval benchmarks.
+            </p>
+          </div>
+
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- ========================================================= -->
+    <!-- FOOTER / SHORTCUTS QUICK BAR -->
+    <!-- ========================================================= -->
+    <footer class="app-footer">
+      <div class="footer-container">
+        
+        <div class="shortcuts-inline-bar">
+          <span class="shortcuts-label"><i class="fa-regular fa-keyboard"></i> Quick Keys:</span>
+          <div class="shortcut-pills">
+            <span class="kbd-pill"><kbd>Space</kbd> Start/Pause</span>
+            <span class="kbd-pill"><kbd>L</kbd> Lap</span>
+            <span class="kbd-pill"><kbd>R</kbd> Reset</span>
+            <span class="kbd-pill"><kbd>M</kbd> Sound</span>
+            <span class="kbd-pill"><kbd>T</kbd> Theme</span>
+          </div>
+        </div>
+
+        <div class="footer-intern-info">
+          <span>Prodigy InfoTech Full Stack Internship • <strong>Task 02</strong></span>
+          <span class="footer-sep">•</span>
+          <a href="https://github.com/RajGoyal01" target="_blank" rel="noopener" class="footer-gh-link">
+            <i class="fa-brands fa-github"></i> RajGoyal01
+          </a>
+        </div>
+
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- KEYBOARD SHORTCUTS MODAL -->
+  <!-- ========================================================= -->
+  <div class="modal-overlay" id="shortcuts-modal" aria-hidden="true">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title-box">
+          <i class="fa-solid fa-keyboard modal-icon"></i>
+          <h3 class="modal-title">Keyboard Shortcuts</h3>
+        </div>
+        <button class="modal-close-btn" id="modal-close-btn" aria-label="Close modal">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="shortcut-row">
+          <span class="shortcut-desc">Start / Pause Stopwatch</span>
+          <kbd class="shortcut-key">Space</kbd>
+        </div>
+        <div class="shortcut-row">
+          <span class="shortcut-desc">Record Lap Split</span>
+          <kbd class="shortcut-key">L</kbd>
+        </div>
+        <div class="shortcut-row">
+          <span class="shortcut-desc">Reset Stopwatch to Zero</span>
+          <kbd class="shortcut-key">R</kbd>
+        </div>
+        <div class="shortcut-row">
+          <span class="shortcut-desc">Toggle Mechanical Audio</span>
+          <kbd class="shortcut-key">M</kbd>
+        </div>
+        <div class="shortcut-row">
+          <span class="shortcut-desc">Cycle Visual Theme</span>
+          <kbd class="shortcut-key">T</kbd>
+        </div>
+        <div class="shortcut-row">
+          <span class="shortcut-desc">Toggle Fullscreen Display</span>
+          <kbd class="shortcut-key">F</kbd>
+        </div>
+        <div class="shortcut-row">
+          <span class="shortcut-desc">Close Modal Dialogs</span>
+          <kbd class="shortcut-key">Esc</kbd>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-modal-dismiss" id="modal-dismiss-btn">Got It</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Floating Container -->
+  <div class="toast-container" id="toast-container" aria-live="polite"></div>
+
+  <!-- JavaScript File -->
+  <script src="script.js"></script>
+</body>
+</html>
